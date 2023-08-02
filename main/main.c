@@ -20,6 +20,8 @@ bool flag_BOTAO_PRESSIONADO = 0;
 bool button = 0;
 bool last_button = 0;
 
+bool botao_verde; // simula sensor FECHADO
+bool botao_branco; // simula sensor ABERTO
 
 void app_main()
 {
@@ -28,17 +30,36 @@ void app_main()
     while(1)
     {
         button = gpio_get_level(BT_PIN);
+        botao_verde = gpio_get_level(BOTAO_VERDE);
+        botao_branco = gpio_get_level(BOTAO_BRANCO);
 
         if (button && !last_button)
         {
             flag_BOTAO_PRESSIONADO = 1;
         }
 
+        if (botao_verde)
+        {
+            flag_FECHADO = 1;
+        } else {
+            flag_FECHADO = 0;
+        }
+
+        if (botao_branco)
+        {
+            flag_ABERTO = 1;
+        } else {
+            flag_ABERTO = 0;
+        }
+
+
         novo_estado(&estado, &flag_ABERTO, &flag_FECHADO, &flag_BOTAO_PRESSIONADO);
         funcao_estado(&estado, &flag_ABERTO, &flag_FECHADO, &flag_BOTAO_PRESSIONADO);
 
         flag_BOTAO_PRESSIONADO = 0;
+        
         last_button = button;
+
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

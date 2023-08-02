@@ -19,6 +19,11 @@ void setup_gpios()
     gpio_set_direction(LED_AMARELO, GPIO_MODE_OUTPUT);
     gpio_pad_select_gpio(BT_PIN);
     gpio_set_direction(BT_PIN, GPIO_MODE_INPUT);
+
+    gpio_pad_select_gpio(BOTAO_VERDE);
+    gpio_set_direction(BOTAO_VERDE, GPIO_MODE_INPUT);
+    gpio_pad_select_gpio(BOTAO_BRANCO);
+    gpio_set_direction(BOTAO_BRANCO, GPIO_MODE_INPUT);
 }
 
 void print_novo_estado(enum estado_t* estado)
@@ -59,9 +64,7 @@ void funcao_estado(enum estado_t* estado, bool* p_flag_ABERTO, bool* p_flag_FECH
 
     else if(*estado == ABRINDO)
     {
-        funcao_ABRINDO();
-        *p_flag_FECHADO = 0;
-        *p_flag_ABERTO = 1;
+        funcao_ABRINDO(&p_flag_ABERTO, &p_flag_FECHADO);
     }
 
     else if(*estado == ABERTO)
@@ -69,9 +72,7 @@ void funcao_estado(enum estado_t* estado, bool* p_flag_ABERTO, bool* p_flag_FECH
 
     else if(*estado == FECHANDO)
     {
-        funcao_FECHANDO();
-        *p_flag_FECHADO = 1;
-        *p_flag_ABERTO = 0;
+        funcao_FECHANDO(&p_flag_ABERTO, &p_flag_FECHADO);
     }
 
     return;
@@ -80,18 +81,21 @@ void funcao_estado(enum estado_t* estado, bool* p_flag_ABERTO, bool* p_flag_FECH
 // TODO
 void funcao_FECHADO(void)
 {
+    
     gpio_set_level(LED_VERDE, 0);
     gpio_set_level(LED_AMARELO, 0);
 
     return;
 }
 
-void funcao_FECHANDO(void)
+void funcao_FECHANDO(bool* p_flag_ABERTO, bool* p_flag_FECHADO)
 {
     gpio_set_level(LED_VERDE, 0);
     gpio_set_level(LED_AMARELO, 1);
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    while(!(*p_flag_FECHADO)) vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    *p_flag_ABERTO = 0;
 
     return;
 }
@@ -104,12 +108,14 @@ void funcao_ABERTO(void)
     return;
 }
 
-void funcao_ABRINDO(void)
+void funcao_ABRINDO(bool* p_flag_ABERTO, bool* p_flag_FECHADO)
 {
     gpio_set_level(LED_VERDE, 1);
     gpio_set_level(LED_AMARELO, 0);
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    while(!(*p_flag_ABERTO)) vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    *p_flag_FECHADO = 0;
 
     return;
 }
